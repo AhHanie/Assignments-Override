@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <AssignOverride.LoadingLabel>Inventing the wheel ...</AssignOverride.LoadingLabel>
+  <AssignOverride.FloatMenuLabel>(Assignment Override)</AssignOverride.FloatMenuLabel>
+  <AssignOverride.SettingsTitle>Assignments Override</AssignOverride.SettingsTitle>
+  <AssignOverride.GizmoLabel>Override Assignments</AssignOverride.GizmoLabel>
+  <AssignOverride.GizmoDesc>Allows this pawn to override assignment restrictions.</AssignOverride.GizmoDesc>
+  <AssignOverride.Settings.EnableAll.Label>Enable override for all pawns</AssignOverride.Settings.EnableAll.Label>
+  <AssignOverride.Settings.EnableAll.Desc>When enabled, all pawns automatically override assignment restrictions. This also disables the toggle gizmo from rendering.</AssignOverride.Settings.EnableAll.Desc>
+  <AssignOverride.Settings.RestartNotice>This setting takes effect after restarting the game.</AssignOverride.Settings.RestartNotice>
+</LanguageData>
