@@ -22,6 +22,8 @@ namespace Assignment_Overrides.Patches
             var getPriorityMethod = AccessTools.Method(typeof(Pawn_WorkSettings), nameof(Pawn_WorkSettings.GetPriority));
             var shouldAllowMethod = AccessTools.Method(typeof(FloatMenuWorkGiverOptionPatch), nameof(ShouldAllowPriorityBranch));
             var appendLabelMethod = AccessTools.Method(typeof(FloatMenuWorkGiverOptionPatch), nameof(AppendFloatMenuLabelIfNeeded));
+            var actionableDisplayClassType = AccessTools.TypeByName("RimWorld.FloatMenuOptionProvider_WorkGivers+<>c__DisplayClass17_1");
+            var localJobField = AccessTools.Field(actionableDisplayClassType, "localJob");
 
             matcher.MatchStartForward(
                 new CodeMatch(OpCodes.Ldloc_0),
@@ -51,6 +53,16 @@ namespace Assignment_Overrides.Patches
                 Logger.Error("Failed to resolve ShouldAllowPriorityBranch in GetWorkGiverOption transpiler patch.");
                 return code;
             }
+            if (appendLabelMethod == null)
+            {
+                Logger.Error("Failed to resolve AppendFloatMenuLabelIfNeeded in GetWorkGiverOption transpiler patch.");
+                return code;
+            }
+            if (localJobField == null)
+            {
+                Logger.Error("Failed to resolve localJob field in GetWorkGiverOption transpiler patch.");
+                return code;
+            }
 
             // Replace the entire priority check block:
             // pawn.workSettings.GetPriority(workType) != 0
@@ -68,22 +80,26 @@ namespace Assignment_Overrides.Patches
             code.RemoveRange(priorityCheckStart, 6);
             code.InsertRange(priorityCheckStart, replacement);
 
-            // Insert label append immediately after actionable prioritize text is assigned
-            // in the final else block (stloc.2 followed by dup).
-            var actionableTextStoreIndex = code.FindIndex(ci => ci.opcode == OpCodes.Stloc_2);
-            while (actionableTextStoreIndex >= 0 &&
-                   (actionableTextStoreIndex + 1 >= code.Count || code[actionableTextStoreIndex + 1].opcode != OpCodes.Dup))
+            if (!ModSettings.RenderFloatMenuAssignmentLabel)
             {
-                actionableTextStoreIndex = code.FindIndex(actionableTextStoreIndex + 1, ci => ci.opcode == OpCodes.Stloc_2);
-            }
-
-            if (actionableTextStoreIndex < 0)
-            {
-                Logger.Error("Failed to locate actionable text assignment in GetWorkGiverOption transpiler patch.");
+                Logger.Message("Skipping float menu label insertion because the setting is disabled.");
                 return code;
             }
 
-            code.InsertRange(actionableTextStoreIndex + 1, new[]
+            // Insert label append immediately before localJob is stored in
+            // <>c__DisplayClass17_1. At this point, the actionable prioritize
+            // text assignment block has already completed.
+            var localJobStoreIndex = code.FindIndex(ci =>
+                ci.opcode == OpCodes.Stfld &&
+                Equals(ci.operand, localJobField));
+
+            if (localJobStoreIndex < 0)
+            {
+                Logger.Error("Failed to locate actionable text merge point in GetWorkGiverOption transpiler patch.");
+                return code;
+            }
+
+            code.InsertRange(localJobStoreIndex, new[]
             {
                 new CodeInstruction(OpCodes.Ldloc_2),
                 new CodeInstruction(OpCodes.Ldloc_0),
@@ -101,14 +117,17 @@ namespace Assignment_Overrides.Patches
         {
             if (!ShouldPawnAssignmentOverride(pawn))
             {
+                Logger.Message("Shouldn't assign no text");
                 return text;
             }
 
             if (pawn.workSettings.GetPriority(workType) != 0)
             {
+                Logger.Message("priority not 0 no text");
                 return text;
             }
 
+            Logger.Message("Adding text");
             return text + " " + "AssignOverride.FloatMenuLabel".Translate();
         }
 

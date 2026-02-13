@@ -13,6 +13,11 @@ namespace Assignment_Overrides
                 "AssignOverride.Settings.EnableAll.Label".Translate(),
                 ref ModSettings.EnableOverrideForAll,
                 "AssignOverride.Settings.EnableAll.Desc".Translate());
+            listing.Gap();
+            listing.CheckboxLabeled(
+                "AssignOverride.Settings.RenderFloatMenuLabel.Label".Translate(),
+                ref ModSettings.RenderFloatMenuAssignmentLabel,
+                "AssignOverride.Settings.RenderFloatMenuLabel.Desc".Translate());
             listing.GapLine();
             listing.Label("AssignOverride.Settings.RestartNotice".Translate());
             listing.End();
