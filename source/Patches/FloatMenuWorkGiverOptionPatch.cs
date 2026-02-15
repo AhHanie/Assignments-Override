@@ -1,10 +1,11 @@
+using HarmonyLib;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib;
-using RimWorld;
 using Verse;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Assignment_Overrides.Patches
 {
@@ -117,17 +118,14 @@ namespace Assignment_Overrides.Patches
         {
             if (!ShouldPawnAssignmentOverride(pawn))
             {
-                Logger.Message("Shouldn't assign no text");
                 return text;
             }
 
             if (pawn.workSettings.GetPriority(workType) != 0)
             {
-                Logger.Message("priority not 0 no text");
                 return text;
             }
 
-            Logger.Message("Adding text");
             return text + " " + "AssignOverride.FloatMenuLabel".Translate();
         }
 
@@ -136,6 +134,11 @@ namespace Assignment_Overrides.Patches
             if (pawn.WorkTypeIsDisabled(workType))
             {
                 return false;
+            }
+
+            if (pawn.workSettings.GetPriority(workType) != 0)
+            {
+                return true;
             }
 
             return ShouldPawnAssignmentOverride(pawn);
@@ -148,8 +151,7 @@ namespace Assignment_Overrides.Patches
                 return true;
             }
 
-            var component = Current.Game.GetComponent<OverrideAssignmentGameComponent>();
-            return component.ShouldOverride(pawn);
+            return Current.Game.GetComponent<OverrideAssignmentGameComponent>().ShouldOverride(pawn);
         }
     }
 }
